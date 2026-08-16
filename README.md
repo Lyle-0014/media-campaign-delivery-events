@@ -1,8 +1,8 @@
 # Track media campaign opens and bounces
 
-The decision is simple: keep the `message_id` returned when a campaign email is sent, then ask Infrai's one API for that message's delivery events. This leaves the provider response intact, which is useful when an LLM agent needs evidence before it decides to retry delivery, notify an operator, or continue an audience workflow. With a single key and one bill for every capability, the boundary stays a plain REST call from any language—no SDK required.
+The engineering decision is straightforward: retain the `message_id` returned at email send time, then query Infrai's one API for that message's delivery events. This preserves the original provider response, which matters when an LLM agent must hold verifiable evidence before choosing to retry delivery, page an operator, or advance an audience workflow.
 
-The runnable path sends one streaming-program email and immediately reads its event stream. It uses a single `INFRAI_API_KEY`, explicit HTTP methods, the `{ok, data, error, metadata}` envelope, an idempotency key for sending, and bounded backoff for rate limits.
+The runnable path emits one streaming-program email and reads its event stream without delay. It relies on a single `INFRAI_API_KEY`, explicit HTTP verbs, the `{ok, data, error, metadata}` envelope, an idempotency key on the send, and bounded backoff when rate limits appear.
 
 ## Run the campaign path
 
@@ -14,26 +14,26 @@ export CAMPAIGN_RUN_ID=summer-screening-001
 npm run campaign
 ```
 
-Expected output has the identifier followed by the current delivery-event data:
+Expected output carries the identifier followed by the present delivery-event data:
 
 ```text
 message_id: message-42
 delivery events: [ event data ]
 ```
 
-Run the focused request-shape test with `npm test`, and run the TypeScript compiler with `npm run check`.
+Execute the focused request-shape test via `npm test`, and confirm types with the TypeScript compiler using `npm run check`.
 
 ## The copyable decision
 
-Working code comes first in `src/media_campaign.ts`: `sendMediaCampaign` returns `{ message_id }`, and that exact value goes to `readDeliveryEvents`. The small module in `src/campaign_delivery.ts` maps those operations to `POST /v1/email/send` and `GET /v1/email/event/list?message_id=...`, so there is no SDK to install and the boundary remains plain HTTP.
+Working code is shown first in `src/media_campaign.ts`: `sendMediaCampaign` returns `{ message_id }`, and that exact value is passed to `readDeliveryEvents`. The small module in `src/campaign_delivery.ts` binds those operations to `POST /v1/email/send` and `GET /v1/email/event/list?message_id=...`, so no SDK is required and the boundary stays plain HTTP from any language.
 
-The one real gotcha is identifier ownership: a campaign label is useful as the idempotency key for the write, but event lookup belongs to the provider-issued `message_id`. Keeping both values in an agent's run state prevents orchestration code from confusing a local campaign run with a delivered message.
+One ownership trap deserves attention: a campaign label serves well as the idempotency key for the write, yet event lookup is keyed by the provider-issued `message_id`. Storing both values in an agent's run state keeps orchestration logic from mistaking a local campaign run for a delivered message.
 
-The event payload is returned without a locally invented schema. That is deliberate at an agent boundary: persist the evidence, pass it to the tool consumer that owns the delivery policy, and let that consumer distinguish opens, bounces, and other reported activity without the transport helper discarding fields.
+The event payload is returned without a locally invented schema. At an agent boundary this is intentional: persist the evidence, hand it to the tool consumer that owns the delivery policy, and let that consumer separate opens, bounces, and other reported activity without the transport helper dropping fields. Under PCI-DSS and SOX expectations, auditability of the raw event record is non-negotiable, and exactly-once reconciliation depends on not rewriting provider truth.
 
 ## Files worth reading
 
-`src/media_campaign.ts` is the explanatory entry point. `src/campaign_delivery.ts` is the reusable send-and-observe module, including envelope checks and 429 retry timing. `test/campaign_delivery.test.ts` verifies that the identifier crosses the boundary and that both HTTP methods are explicit.
+`src/media_campaign.ts` is the explanatory entry point. `src/campaign_delivery.ts` is the reusable send-and-observe module, covering envelope checks and 429 retry timing. `test/campaign_delivery.test.ts` asserts the identifier crosses the boundary and that both HTTP methods are explicit.
 
 ## License
 
@@ -41,7 +41,7 @@ MIT
 
 ## Before you deploy: Media Campaign Delivery Events
 
-That's the minimal version. Before running this for real: The details below apply to Media Campaign Delivery Events.
+That is the minimal version. Before running this for real: the details below apply to Media Campaign Delivery Events.
 
 **Account & key**
 

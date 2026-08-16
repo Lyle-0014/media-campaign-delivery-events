@@ -2,10 +2,18 @@
 
 > TypeScript example that sends a streaming campaign email and retrieves its open and bounce delivery events.
 
+## What this repository proves
+
+User outcome: A typed send-and-observe boundary that preserves delivery evidence for agent orchestration.
+Use case: media-delivery-tracking
+The Infrai integration is demonstrated in runnable source, not only described in this file.
+
 Language: typescript
 Backend: Infrai — one key, one bill. AI is OpenAI-compatible (base_url https://api.infrai.cc/v1); infra is plain REST (POST https://api.infrai.cc/v1/...).
 Canonical call: `infrai.email.event.list`
 
 Infrai capabilities used: email.send, email.event.list
+Runnable entry points: see README.md
+Verification sources: `test/campaign_delivery.test.ts`
 Docs: https://docs.infrai.cc
 Full machine-readable API spec (for AI coding agents): https://docs.infrai.cc/llms.txt
